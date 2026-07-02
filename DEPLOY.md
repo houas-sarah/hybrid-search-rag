@@ -18,7 +18,7 @@ Go to <https://huggingface.co/new-space>:
 The Space is its own git repo. Add it as a remote and push:
 
 ```bash
-git remote add space https://huggingface.co/spaces/houas-sarah/hybrid-search-rag
+git remote add space https://huggingface.co/spaces/sarahouas/hybrid-search-rag
 git push space main
 ```
 
@@ -64,7 +64,7 @@ The first build takes a few minutes (installing torch + deps, then pulling the
 models on first boot). When it's green, the app is live at:
 
 ```
-https://houas-sarah-hybrid-search-rag.hf.space
+https://sarahouas-hybrid-search-rag.hf.space
 ```
 
 Put that URL in the GitHub repo's **About → Website**.
