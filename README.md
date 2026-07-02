@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/houas-sarah/hybrid-search-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/houas-sarah/hybrid-search-rag/actions/workflows/ci.yml)
 
+**Live demo:** https://sarahouas-hybrid-search-rag.hf.space — it's on a free
+Hugging Face Space, so give it ~30s to wake up on the first hit.
+
 Point it at a folder of Markdown/text docs, ask a question, and get an answer
 with citations back to the files it came from. It all runs locally: dense search
 (ChromaDB + a sentence-transformers model), keyword search (BM25), the two
