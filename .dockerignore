@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets are injected at runtime via env_file, never baked into the image.
+.env
+
+# Local persisted indexes (rebuilt inside the container / mounted volume).
+data/chroma/
+data/bm25/

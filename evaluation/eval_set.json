@@ -1,0 +1,52 @@
+[
+  {
+    "question": "What Python version and database does the platform need?",
+    "relevant_sources": ["readme.md"],
+    "expected_keywords": ["3.11", "PostgreSQL"]
+  },
+  {
+    "question": "How do I change the port the API listens on?",
+    "relevant_sources": ["configuration.md", "readme.md"],
+    "expected_keywords": ["ACME_PORT"]
+  },
+  {
+    "question": "Why are my jobs stuck in the pending state?",
+    "relevant_sources": ["troubleshooting.md"],
+    "expected_keywords": ["Redis", "worker"]
+  },
+  {
+    "question": "Which environment variable holds the database connection string?",
+    "relevant_sources": ["configuration.md"],
+    "expected_keywords": ["ACME_DATABASE_URL"]
+  },
+  {
+    "question": "How are failed jobs retried?",
+    "relevant_sources": ["configuration.md"],
+    "expected_keywords": ["backoff"]
+  },
+  {
+    "question": "How can I reduce peak memory usage on the workers?",
+    "relevant_sources": ["troubleshooting.md"],
+    "expected_keywords": ["ACME_WORKER_CONCURRENCY"]
+  },
+  {
+    "question": "What does a 'could not connect to server' error at startup mean?",
+    "relevant_sources": ["troubleshooting.md"],
+    "expected_keywords": ["PostgreSQL"]
+  },
+  {
+    "question": "What is the default worker concurrency?",
+    "relevant_sources": ["configuration.md"],
+    "expected_keywords": ["4"]
+  },
+  {
+    "question": "How do I install the platform's dependencies?",
+    "relevant_sources": ["readme.md"],
+    "expected_keywords": ["requirements.txt"]
+  },
+  {
+    "question": "What does the platform use for its task queue?",
+    "relevant_sources": ["readme.md"],
+    "expected_keywords": ["Redis"]
+  }
+]

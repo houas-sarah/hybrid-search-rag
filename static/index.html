@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hybrid Search RAG</title>
+  <style>
+    :root {
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: #eff4ff;
+      --text: #1f2328;
+      --muted: #656d76;
+      --border: #d5dbe1;
+      --subtle: #f6f8fa;
+      --green: #1a7f37;
+      --red: #cf222e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text); background: #fff; margin: 0; font-size: 15px; line-height: 1.55;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 32px 16px 72px; }
+
+    header { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .brand svg { color: var(--accent); }
+    h1 { font-size: 19px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+    h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 26px 0 10px; }
+
+    .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
+              border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+    .status .dot { width: 7px; height: 7px; border-radius: 50%; background: #adb5bd; }
+    .status .dot.ok { background: var(--green); }
+    .status .dot.off { background: var(--red); }
+
+    .desc { color: var(--muted); margin: 14px 0 22px; }
+
+    .card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; box-shadow: 0 1px 2px rgba(27,31,36,.04); }
+    textarea {
+      width: 100%; min-height: 78px; resize: vertical; display: block;
+      font-family: inherit; font-size: 15px; padding: 10px 12px; color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px; background: #fff;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.14); }
+
+    .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; }
+    .chip {
+      font: inherit; font-size: 12.5px; color: var(--muted); background: var(--subtle);
+      border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px; cursor: pointer;
+    }
+    .chip:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+    .actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    button {
+      font: inherit; font-size: 14px; font-weight: 500; padding: 7px 15px; border-radius: 8px;
+      cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 7px;
+    }
+    button:disabled { opacity: .6; cursor: default; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-default { background: #fff; color: var(--text); border-color: var(--border); }
+    .btn-default:hover:not(:disabled) { background: var(--subtle); }
+    .hint { margin-left: auto; color: #8c959f; font-size: 12px; }
+    .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+               border-radius: 50%; animation: spin .7s linear infinite; }
+    .btn-default .spinner { border-color: rgba(27,31,36,.25); border-top-color: var(--text); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .msg { margin-top: 12px; font-size: 13px; color: var(--muted); min-height: 18px; }
+    .msg.err { color: var(--red); }
+
+    .result { display: none; margin-top: 26px; }
+    .result.show { display: block; }
+    .answer {
+      border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px;
+      background: var(--subtle); padding: 14px 16px; white-space: pre-wrap; line-height: 1.7;
+    }
+    .answer code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px;
+                   background: #eaeef2; border-radius: 4px; padding: .5px 5px; }
+    .answer .cite {
+      font-family: ui-monospace, Consolas, monospace; font-size: 12px;
+      background: var(--accent-soft); color: var(--accent); border: 1px solid #d3e0fb;
+      border-radius: 4px; padding: 0 5px; white-space: nowrap;
+    }
+
+    .source { border: 1px solid var(--border); border-radius: 8px; padding: 11px 13px; margin-bottom: 8px; cursor: pointer; }
+    .source:hover { border-color: #b7c0ca; }
+    .source .top { display: flex; align-items: center; gap: 10px; }
+    .rank { font-size: 11px; color: var(--muted); background: var(--subtle); border: 1px solid var(--border);
+            border-radius: 5px; min-width: 20px; text-align: center; padding: 1px 0; }
+    .source .name { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+    .source .meta { margin-left: auto; color: var(--muted); font-size: 12px; }
+    .source .toggle { color: var(--accent); font-size: 11px; }
+    .source .text { color: var(--muted); font-size: 13px; margin-top: 7px; white-space: pre-wrap;
+                    max-height: 66px; overflow: hidden; position: relative; }
+    .source:not(.expanded) .text::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+                    height: 24px; background: linear-gradient(rgba(246,248,250,0), #fff); }
+    .source.expanded .text { max-height: none; }
+    .source.expanded .text::after { display: none; }
+
+    footer { color: #8c959f; font-size: 12px; margin-top: 34px; border-top: 1px solid var(--border); padding-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <h1>Hybrid Search RAG</h1>
+      </div>
+      <span class="status"><span id="dot" class="dot"></span><span id="statusText">checking…</span></span>
+    </header>
+
+    <p class="desc">Ask a question about the indexed documentation. Answers cite the source files they came from.</p>
+
+    <div class="card">
+      <textarea id="query" placeholder="e.g. What Python version and database does the platform need?"></textarea>
+      <div class="examples" id="examples"></div>
+      <div class="actions">
+        <button id="askBtn" class="btn-primary">Ask</button>
+        <button id="ingestBtn" class="btn-default">Reindex documents</button>
+        <span class="hint">Ctrl+Enter</span>
+      </div>
+      <div id="msg" class="msg"></div>
+    </div>
+
+    <div id="result" class="result">
+      <h2>Answer</h2>
+      <div id="answer" class="answer"></div>
+      <h2>Sources</h2>
+      <div id="sources"></div>
+    </div>
+
+    <footer>Runs locally — dense (ChromaDB) + sparse (BM25), fused with RRF, reranked, answered by Ollama or Groq.</footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const askBtn = $("askBtn"), ingestBtn = $("ingestBtn"), queryEl = $("query");
+
+    const EXAMPLES = [
+      "What Python version and database does the platform need?",
+      "Why are my jobs stuck in pending?",
+      "How do I change the port?",
+    ];
+
+    function message(text, isErr) {
+      const m = $("msg");
+      m.textContent = text || "";
+      m.className = "msg" + (isErr ? " err" : "");
+    }
+
+    function setStatus(ok, indexed) {
+      const dot = $("dot");
+      if (ok) {
+        dot.className = "dot ok";
+        $("statusText").textContent = indexed ? "ready, indexed" : "ready, not indexed";
+      } else {
+        dot.className = "dot off";
+        $("statusText").textContent = "offline";
+      }
+    }
+
+    function busy(btn, on, label) {
+      btn.disabled = on;
+      btn.innerHTML = on ? '<span class="spinner"></span>' + label : label;
+    }
+
+    // Escape HTML, then render a safe subset of markdown + citation chips.
+    function renderAnswer(text) {
+      let s = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+      s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      s = s.replace(/\[([\w./\-]+\.(?:md|markdown|txt))\]/g, '<span class="cite">$1</span>');
+      return s;
+    }
+
+    async function health() {
+      try {
+        const d = await (await fetch("/health")).json();
+        setStatus(true, d.indexed);
+      } catch { setStatus(false); }
+    }
+
+    async function ingest() {
+      busy(ingestBtn, true, "Indexing…");
+      message("");
+      try {
+        const r = await fetch("/ingest", { method: "POST" });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || "ingest failed");
+        message(`Indexed ${d.documents_indexed} document(s), ${d.chunks_indexed} chunk(s).`);
+        health();
+      } catch (e) {
+        message(e.message, true);
+      } finally {
+        busy(ingestBtn, false, "Reindex documents");
+      }
+    }
+
+    async function ask() {
+      const q = queryEl.value.trim();
+      if (!q) { message("Type a question first.", true); return; }
+      busy(askBtn, true, "Searching…");
+      message("");
+      try {
+        const r = await fetch("/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q }),
+        });
+        const d = await r.json();
+        if (r.status === 409) throw new Error('No documents indexed yet — click "Reindex documents".');
+        if (!r.ok) throw new Error(d.detail || "query failed");
+
+        $("answer").innerHTML = renderAnswer(d.answer);
+        const box = $("sources");
+        box.innerHTML = "";
+        (d.sources || []).forEach((s, i) => {
+          const el = document.createElement("div");
+          el.className = "source";
+          el.innerHTML =
+            '<div class="top"><span class="rank">' + (i + 1) + '</span>' +
+            '<span class="name"></span>' +
+            '<span class="meta">score ' + Number(s.score).toFixed(3) +
+            ' · <span class="toggle">expand</span></span></div><div class="text"></div>';
+          el.querySelector(".name").textContent = s.source;
+          el.querySelector(".text").textContent = s.text;
+          el.addEventListener("click", () => {
+            const open = el.classList.toggle("expanded");
+            el.querySelector(".toggle").textContent = open ? "collapse" : "expand";
+          });
+          box.appendChild(el);
+        });
+        $("result").classList.add("show");
+      } catch (e) {
+        message(e.message, true);
+      } finally {
+        busy(askBtn, false, "Ask");
+      }
+    }
+
+    // build example chips
+    const ex = $("examples");
+    EXAMPLES.forEach((q) => {
+      const c = document.createElement("button");
+      c.className = "chip";
+      c.type = "button";
+      c.textContent = q;
+      c.addEventListener("click", () => { queryEl.value = q; ask(); });
+      ex.appendChild(c);
+    });
+
+    askBtn.addEventListener("click", ask);
+    ingestBtn.addEventListener("click", ingest);
+    queryEl.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") ask();
+    });
+    health();
+  </script>
+</body>
+</html>

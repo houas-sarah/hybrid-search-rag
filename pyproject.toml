@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Let tests import the top-level packages (config, ingestion, retrieval, ...).
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
