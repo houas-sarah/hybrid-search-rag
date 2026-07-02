@@ -24,7 +24,11 @@ logger = logging.getLogger("rag")
 async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info("Starting RAG service (provider=%s) ...", settings.llm_provider.value)
-    app.state.rag_service = RAGService.create(settings)
+    service = RAGService.create(settings)
+    app.state.rag_service = service
+    if settings.ingest_on_startup and not service.is_indexed:
+        logger.info("Auto-ingesting documents on startup ...")
+        await service.ingest()
     logger.info("RAG service ready.")
     yield
 

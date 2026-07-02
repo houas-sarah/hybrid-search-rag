@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     groq_model: str = "llama-3.1-8b-instant"
 
+    # deployment: build the index at startup if it's empty (useful on hosts with
+    # ephemeral disks, e.g. Hugging Face Spaces, where the index doesn't persist)
+    ingest_on_startup: bool = False
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_chunk_overlap(self) -> int:

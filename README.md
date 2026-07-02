@@ -113,6 +113,8 @@ docker compose --profile local-llm up --build
 docker compose exec ollama ollama pull llama3
 ```
 
+Want it hosted? See [DEPLOY.md](DEPLOY.md) for a free Hugging Face Spaces setup.
+
 ## Tests
 
 ```bash
